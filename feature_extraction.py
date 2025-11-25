@@ -6,8 +6,8 @@ from tqdm import tqdm
 
 # --- CONFIGURACIÓN DE DESCRIPTORES ---
 try:
-    # Usaremos SIFT (más estable) para contar KeyPoints
-    FEATURE_DETECTOR = cv2.SIFT_create()
+    # Usaremos SIFT con un límite de features para reducir la memoria
+    FEATURE_DETECTOR = cv2.SIFT_create(nfeatures=500)
 except AttributeError:
     print("Advertencia: SIFT no encontrado. Usando detector FAST simple.")
     FEATURE_DETECTOR = cv2.FastFeatureDetector_create()
@@ -16,13 +16,11 @@ except AttributeError:
 def extract_features(cropped_data, set_name):
     """
     Calcula un vector de características (features) para cada vehículo recortado.
-    Devuelve X (features) e Y (etiquetas numéricas).
     """
 
     X_features = []
     Y_labels = []
 
-    # Añadimos tqdm para la barra de progreso en la extracción
     for item in tqdm(cropped_data, desc=f"Extrayendo features de {set_name}"):
         img = item['image']
         obj_class = item['class']
@@ -46,38 +44,30 @@ def extract_features(cropped_data, set_name):
         feature_vector = [aspect_ratio, h_avg, s_avg, v_avg, num_keypoints]
 
         X_features.append(feature_vector)
-        # Convertimos la etiqueta de texto a un valor numérico (Car=0, Truck=1)
         Y_labels.append(0 if obj_class == 'Car' else 1)
 
-        # Devolvemos también el conjunto de datos original para la verificación visual
     return np.array(X_features), np.array(Y_labels), cropped_data
 
 
 def normalize_features(X_train, X_test):
     """Normaliza las características usando StandardScaler."""
-
-    # Inicializar el escalador
     scaler = StandardScaler()
-
-    # ENTRENAR el escalador SOLO con los datos de ENTRENAMIENTO
     X_train_scaled = scaler.fit_transform(X_train)
-
-    # APLICAR la transformación a los datos de PRUEBA
     X_test_scaled = scaler.transform(X_test)
 
-    return X_train_scaled, X_test_scaled
+    return X_train_scaled, X_test_scaled, scaler  # Devolvemos el scaler
 
 
 # --- FUNCIÓN PRINCIPAL PARA IMPORTAR ---
 def run_feature_extraction(train_set, test_set):
-    start_time = time.time()  # Iniciar contador de tiempo
+    start_time = time.time()
 
     # 1. Extracción
     X_train, Y_train, train_data_visual = extract_features(train_set, "Train")
     X_test, Y_test, test_data_visual = extract_features(test_set, "Test")
 
     # 2. Normalización
-    X_train_scaled, X_test_scaled = normalize_features(X_train, X_test)
+    X_train_scaled, X_test_scaled, scaler = normalize_features(X_train, X_test)
 
     elapsed = time.time() - start_time
     minutes, seconds = divmod(elapsed, 60)
@@ -88,5 +78,4 @@ def run_feature_extraction(train_set, test_set):
     print(f"TIEMPO TOTAL: {int(minutes)} minutos y {seconds:.2f} segundos.")
     print(f"=======================================================")
 
-    # Devolvemos los datos listos para el entrenamiento y los datos visuales
-    return X_train_scaled, Y_train, X_test_scaled, Y_test, test_data_visual
+    return X_train_scaled, Y_train, X_test_scaled, Y_test, test_data_visual, scaler

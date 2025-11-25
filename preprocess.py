@@ -4,14 +4,17 @@ import numpy as np
 import pandas as pd
 import time
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm  # Importamos la librería para la barra de progreso
+from tqdm import tqdm
 
-# --- CONFIGURACIÓN DE RUTAS ---
-# Ajusta estas rutas si es necesario
+# --- CONFIGURACIÓN DE RUTAS Y RATIOS SOLICITADOS ---
+# ¡IMPORTANTE! Si falla la lectura, usa la ruta absoluta de Windows (ej: r'C:\Users\...\image_2').
 BASE_IMAGE_DIR = 'data_object_image_2/training/image_2/'
-BASE_LABEL_DIR = 'label_2/training/label_2'  # ¡OJO! Revisa si la carpeta es 'label_2' o 'label_2/'
+BASE_LABEL_DIR = 'data_object_label_2/training/label_2'
 TARGET_CLASSES = ['Car', 'Truck']
-TEST_SIZE = 0.2  # Usaremos 80% para entrenar y 20% para probar
+
+# Parámetros para reducir el dataset y dividirlo
+DATA_USAGE_RATIO = 0.10  # Usar solo el 10% de las imágenes únicas para evitar desbordamiento de memoria.
+TEST_SIZE = 0.20
 RANDOM_SEED = 42
 
 
@@ -24,7 +27,6 @@ def parse_kitti_labels():
         print(f"Error de ruta: No se encuentra el directorio de etiquetas: {BASE_LABEL_DIR}")
         return pd.DataFrame()
 
-    # Usamos tqdm en el bucle de archivos para mostrar progreso
     label_files = [f for f in os.listdir(BASE_LABEL_DIR) if f.endswith('.txt')]
     for filename in tqdm(label_files, desc="Leyendo etiquetas"):
         file_path = os.path.join(BASE_LABEL_DIR, filename)
@@ -57,39 +59,54 @@ def parse_kitti_labels():
 
 
 def create_datasets_and_crop(df):
-    """Divide el DataFrame en Train/Test y realiza el recorte de imágenes."""
+    """Aplica el ratio de uso, divide en Train/Test y realiza el recorte de imágenes."""
 
     print("\nFase 2: Dividiendo y preparando los conjuntos de datos...")
 
-    # 1. DIVISIÓN INTERNA (80/20)
-    image_ids = df['image_id'].unique()
+    # PASO 1: APLICAR RATIO DE USO (10% de las imágenes)
+    all_image_ids = df['image_id'].unique()
+    num_images_to_use = int(len(all_image_ids) * DATA_USAGE_RATIO)
+
+    np.random.seed(RANDOM_SEED)
+    sampled_image_ids = np.random.choice(
+        all_image_ids,
+        size=num_images_to_use,
+        replace=False
+    )
+
+    df_sampled = df[df['image_id'].isin(sampled_image_ids)].reset_index(drop=True)
+
+    # 2. DIVISIÓN INTERNA (80/20 del subconjunto)
     train_ids, test_ids = train_test_split(
-        image_ids,
+        sampled_image_ids,
         test_size=TEST_SIZE,
         random_state=RANDOM_SEED
     )
 
-    train_df = df[df['image_id'].isin(train_ids)].reset_index(drop=True)
-    test_df = df[df['image_id'].isin(test_ids)].reset_index(drop=True)
+    train_df = df_sampled[df_sampled['image_id'].isin(train_ids)].reset_index(drop=True)
+    test_df = df_sampled[df_sampled['image_id'].isin(test_ids)].reset_index(drop=True)
 
-    print(f"Total de Anotaciones filtradas (Car/Truck): {len(df)}")
+    print(f"Total de Anotaciones filtradas inicialmente: {len(df)}")
+    print(f"Imágenes únicas seleccionadas ({DATA_USAGE_RATIO * 100}%): {len(sampled_image_ids)}")
+    print(f"Anotaciones finales para Train/Test: {len(df_sampled)}")
     print(f"Imágenes únicas para entrenamiento: {len(train_ids)}")
     print(f"Imágenes únicas para prueba: {len(test_ids)}")
 
-    # 2. RECORTES (Añadimos tqdm aquí, donde se lee y procesa OpenCV)
+    # 3. RECORTES (Añadimos tqdm)
 
     def crop_images_from_df(dataset_df, set_name):
         cropped_data = []
 
-        # tqdm itera sobre las filas del DataFrame y muestra el progreso
         for index, row in tqdm(dataset_df.iterrows(), total=len(dataset_df), desc=f"Recortando {set_name}"):
             image_filename = row['image_id'] + '.png'
             image_path = os.path.join(BASE_IMAGE_DIR, image_filename)
 
             img = cv2.imread(image_path)
-            if img is None: continue
 
-            # Coordenadas BBox (convertidas a entero)
+            if img is None:
+                continue
+
+                # Coordenadas BBox (convertidas a entero)
             xmin, ymin, xmax, ymax = map(int, row['bbox'])
 
             # Recorte: [ymin:ymax, xmin:xmax]
@@ -115,20 +132,18 @@ def create_datasets_and_crop(df):
     return train_data, test_data
 
 
-# --- FUNCIÓN PRINCIPAL CON TEMPORIZADOR ---
+# --- FUNCIÓN PRINCIPAL PARA IMPORTAR ---
 def run_preprocessing():
-    start_time = time.time()  # Iniciar contador de tiempo
+    start_time = time.time()
 
     kitti_df = parse_kitti_labels()
     if kitti_df.empty:
-        # Finalizar el temporizador incluso si hay un error de ruta
         elapsed = time.time() - start_time
         print(f"\n--- TIEMPO TOTAL: {elapsed:.2f} segundos ---")
         return [], []
 
     train_set, test_set = create_datasets_and_crop(kitti_df)
 
-    # Finalizar el temporizador si el proceso fue exitoso
     elapsed = time.time() - start_time
     minutes, seconds = divmod(elapsed, 60)
     print(f"\n=======================================================")
@@ -140,10 +155,7 @@ def run_preprocessing():
 
 
 if __name__ == '__main__':
+    # No se ejecuta automáticamente al importar
     train_set, test_set = run_preprocessing()
     if train_set:
-        print("Mostrando ejemplo de recorte...")
-        # Ejemplo: Muestra el primer recorte
-        cv2.imshow("Primer Recorte (Presiona cualquier tecla para cerrar)", train_set[0]['image'])
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        print("Preprocesamiento completado. Listo para la Fase 3.")
