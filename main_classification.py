@@ -7,6 +7,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.class_weight import compute_class_weight
+# --- NUEVA IMPORTACIÓN PARA MÉTRICAS ---
+from sklearn.metrics import accuracy_score, classification_report
+# --------------------------------------
 
 # IMPORTAMOS LAS FASES ANTERIORES
 from preprocess import run_preprocessing
@@ -92,6 +95,18 @@ def classify_vehicles(X_train, Y_train, X_test, Y_test, test_data_visual):
     print(f"\n--- KNN (K={K_VALUE}, weights='distance') ---")
     print(f"Tiempo de entrenamiento y predicción: {elapsed_knn:.4f} segundos.")
 
+    # --- CÁLCULO DE MÉTRICAS DE RENDIMIENTO (NUEVO) ---
+    knn_accuracy = accuracy_score(Y_test, Y_pred_knn)
+    print(f"\nPrecisión General (Accuracy): {knn_accuracy:.4f} ({knn_accuracy*100:.2f}%)")
+
+    # Muestra métricas detalladas por clase
+    target_names = list(CLASS_ID_TO_NAME.values())
+    print("\nReporte de Clasificación (KNN - Precisión, Recall, F1-Score):")
+    # Generamos el reporte usando las etiquetas mapeadas (Car, Truck, etc.)
+    print(classification_report(Y_test, Y_pred_knn, target_names=target_names))
+    # -------------------------------------------------
+
+
     # 2. AGRUPAMIENTO NO SUPERVISADO: K-MEANS
     start_kmeans = time.time()
     # MODIFICACIÓN: n_clusters cambiado a 4 para las 4 clases
@@ -102,6 +117,9 @@ def classify_vehicles(X_train, Y_train, X_test, Y_test, test_data_visual):
 
     print(f"\n--- K-MEANS (K=4) ---")
     print(f"Tiempo de entrenamiento y predicción: {elapsed_kmeans:.4f} segundos.")
+    # NOTA: Para K-Means, la 'precisión' directa no es significativa ya que los IDs de clústeres (0, 1, 2, 3)
+    # no coinciden automáticamente con los IDs de clase (0, 1, 2, 3).
+    # Solo mostramos el tiempo para el agrupamiento no supervisado.
 
     # GENERACIÓN DE RESULTADOS
     results_df = pd.DataFrame({
@@ -125,7 +143,7 @@ def classify_vehicles(X_train, Y_train, X_test, Y_test, test_data_visual):
 
 
 # =========================================================================
-# FUNCIONES DE VISUALIZACIÓN REFORZADAS
+# FUNCIONES DE VISUALIZACIÓN REFORZADAS (SIN CAMBIOS)
 # =========================================================================
 
 def inspect_predictions(results_df, num_samples=5):
