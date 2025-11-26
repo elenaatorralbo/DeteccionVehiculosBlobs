@@ -7,13 +7,12 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 # --- CONFIGURACIÓN DE RUTAS Y RATIOS SOLICITADOS ---
-# ¡IMPORTANTE! Si falla la lectura, usa la ruta absoluta de Windows (ej: r'C:\Users\...\image_2').
 BASE_IMAGE_DIR = 'data_object_image_2/training/image_2/'
 BASE_LABEL_DIR = 'data_object_label_2/training/label_2'
-TARGET_CLASSES = ['Car', 'Truck']
+TARGET_CLASSES = ['Car', 'Truck', 'Pedestrian', 'Cyclist']
 
 # Parámetros para reducir el dataset y dividirlo
-DATA_USAGE_RATIO = 0.10  # Usar solo el 10% de las imágenes únicas para evitar desbordamiento de memoria.
+DATA_USAGE_RATIO = 0.20  # Usar solo el 10% de las imágenes únicas para evitar desbordamiento de memoria.
 TEST_SIZE = 0.20
 RANDOM_SEED = 42
 
@@ -63,7 +62,7 @@ def create_datasets_and_crop(df):
 
     print("\nFase 2: Dividiendo y preparando los conjuntos de datos...")
 
-    # PASO 1: APLICAR RATIO DE USO (10% de las imágenes)
+    # PASO 1: APLICAR RATIO DE USO
     all_image_ids = df['image_id'].unique()
     num_images_to_use = int(len(all_image_ids) * DATA_USAGE_RATIO)
 

@@ -27,7 +27,6 @@ def extract_features(cropped_data, set_name):
 
         if img is None or img.size == 0: continue
 
-        # 1. Aspect Ratio (AR)
         h, w = img.shape[:2]
         aspect_ratio = w / h
 
@@ -55,8 +54,7 @@ def normalize_features(X_train, X_test):
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    return X_train_scaled, X_test_scaled, scaler  # Devolvemos el scaler
-
+    return X_train_scaled, X_test_scaled, scaler
 
 # --- FUNCIÓN PRINCIPAL PARA IMPORTAR ---
 def run_feature_extraction(train_set, test_set):

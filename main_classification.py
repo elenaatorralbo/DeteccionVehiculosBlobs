@@ -18,7 +18,7 @@ K_VALUE = 5  # Valor para el modelo KNN
 
 
 # =========================================================================
-# UTILITY: Función para clasificar un objeto individual (Usa el modelo entrenado)
+# UTILITY: Función para clasificar un objeto individual
 # =========================================================================
 
 def classify_single_object(cropped_img, scaler, knn_model):
@@ -51,7 +51,7 @@ def classify_single_object(cropped_img, scaler, knn_model):
     # 2. Vector de Features
     single_feature_vector = np.array([[aspect_ratio, h_avg, s_avg, v_avg, num_keypoints]])
 
-    # 3. Normalización (USANDO EL SCALER ENTRENADO)
+    # 3. Normalización
     single_scaled_feature = scaler.transform(single_feature_vector)
 
     # 4. Predicción
@@ -83,7 +83,7 @@ def classify_vehicles(X_train, Y_train, X_test, Y_test, test_data_visual):
     # lo cual ayuda a mitigar el desbalance sin usar el argumento 'sample_weight' no soportado.
     knn_model = KNeighborsClassifier(n_neighbors=K_VALUE, weights='distance')
 
-    # Entrenar el modelo (AQUÍ NO SE PASA sample_weight)
+    # Entrenar el modelo
     knn_model.fit(X_train, Y_train)
 
     Y_pred_knn = knn_model.predict(X_test)
@@ -92,7 +92,7 @@ def classify_vehicles(X_train, Y_train, X_test, Y_test, test_data_visual):
     print(f"\n--- KNN (K={K_VALUE}, weights='distance') ---")
     print(f"Tiempo de entrenamiento y predicción: {elapsed_knn:.4f} segundos.")
 
-    # 2. AGRUPAMIENTO NO SUPERVISADO: K-MEANS (Cuerpo sin cambios)
+    # 2. AGRUPAMIENTO NO SUPERVISADO: K-MEANS
     start_kmeans = time.time()
     kmeans_model = KMeans(n_clusters=2, random_state=42, n_init=10)
     kmeans_model.fit(X_train)
@@ -102,7 +102,7 @@ def classify_vehicles(X_train, Y_train, X_test, Y_test, test_data_visual):
     print(f"\n--- K-MEANS (K=2) ---")
     print(f"Tiempo de entrenamiento y predicción: {elapsed_kmeans:.4f} segundos.")
 
-    # GENERACIÓN DE RESULTADOS (El resto del código sigue igual)
+    # GENERACIÓN DE RESULTADOS
     results_df = pd.DataFrame({
         'Ground_Truth': Y_test,
         'Pred_KNN': Y_pred_knn,
@@ -221,7 +221,7 @@ if __name__ == '__main__':
         # 4. INSPECCIÓN VISUAL
 
         # A. Inspección de Recortes (Muestra solo el objeto detectado)
-        inspect_predictions(results_df, num_samples=5)
+        #inspect_predictions(results_df, num_samples=5)
 
         # B. Visualización de Imagen Completa (Muestra la imagen original con el BBox)
         run_realtime_detection(knn_model, scaler, results_df, num_samples=40)
