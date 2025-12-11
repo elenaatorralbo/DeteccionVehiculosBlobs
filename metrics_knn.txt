@@ -1,0 +1,15 @@
+--- REPORTE DE CLASIFICACIÓN: knn ---
+
+Precisión General (Accuracy): 0.9120
+
+Reporte Detallado:
+              precision    recall  f1-score   support
+
+         Car       0.95      0.98      0.96       657
+       Truck       0.50      0.24      0.32        25
+  Pedestrian       0.78      0.92      0.84       107
+     Cyclist       0.58      0.27      0.37        41
+
+    accuracy                           0.91       830
+   macro avg       0.70      0.60      0.63       830
+weighted avg       0.90      0.91      0.90       830

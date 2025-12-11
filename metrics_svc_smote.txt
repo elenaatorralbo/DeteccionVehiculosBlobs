@@ -1,0 +1,15 @@
+--- REPORTE DE CLASIFICACIÓN: svc_smote ---
+
+Precisión General (Accuracy): 0.9644
+
+Reporte Detallado:
+              precision    recall  f1-score   support
+
+         Car       0.97      0.99      0.98       855
+       Truck       1.00      0.81      0.90        27
+  Pedestrian       0.91      0.89      0.90       117
+     Cyclist       1.00      0.66      0.79        41
+
+    accuracy                           0.96      1040
+   macro avg       0.97      0.84      0.89      1040
+weighted avg       0.96      0.96      0.96      1040

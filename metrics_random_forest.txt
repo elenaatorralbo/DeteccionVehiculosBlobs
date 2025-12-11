@@ -1,0 +1,15 @@
+--- REPORTE DE CLASIFICACIÓN: random_forest ---
+
+Precisión General (Accuracy): 0.8260
+
+Reporte Detallado:
+              precision    recall  f1-score   support
+
+         Car       0.83      1.00      0.90       855
+       Truck       1.00      0.15      0.26        27
+  Pedestrian       0.00      0.00      0.00       117
+     Cyclist       0.00      0.00      0.00        41
+
+    accuracy                           0.83      1040
+   macro avg       0.46      0.29      0.29      1040
+weighted avg       0.70      0.83      0.75      1040

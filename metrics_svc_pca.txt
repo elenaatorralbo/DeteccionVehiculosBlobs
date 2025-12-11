@@ -1,0 +1,15 @@
+--- REPORTE DE CLASIFICACIÓN: svc_pca ---
+
+Precisión General (Accuracy): 0.9625
+
+Reporte Detallado:
+              precision    recall  f1-score   support
+
+         Car       0.99      0.97      0.98       855
+       Truck       1.00      0.85      0.92        27
+  Pedestrian       0.81      0.97      0.88       117
+     Cyclist       0.94      0.83      0.88        41
+
+    accuracy                           0.96      1040
+   macro avg       0.94      0.90      0.92      1040
+weighted avg       0.97      0.96      0.96      1040
