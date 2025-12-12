@@ -91,7 +91,7 @@ def create_datasets_and_crop(df):
     print(f"Imágenes únicas para entrenamiento: {len(train_ids)}")
     print(f"Imágenes únicas para prueba: {len(test_ids)}")
 
-    # 3. RECORTES (Añadimos tqdm)
+    # 3. RECORTES
 
     def crop_images_from_df(dataset_df, set_name):
         cropped_data = []

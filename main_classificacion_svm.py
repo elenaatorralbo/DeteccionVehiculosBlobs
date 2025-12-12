@@ -22,7 +22,7 @@ CLASS_ID_TO_NAME = {0: 'Car', 1: 'Truck', 2: 'Pedestrian', 3: 'Cyclist'}
 
 
 # =========================================================================
-# UTILITY: Función para guardar métricas (REUTILIZADA)
+# UTILITY: Función para guardar métricas
 # =========================================================================
 
 def save_metrics_to_file(model_name, accuracy, report):
